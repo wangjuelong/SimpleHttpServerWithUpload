@@ -18,8 +18,7 @@ import urllib.request
 from io import BytesIO
 
 
-# Return the given bytes as a human friendly KB, MB, GB, or TB string
-def format(size):
+def format_size(size):
     B = float(size)
     KB = float(1024)
     MB = float(KB ** 2)  # 1,048,576
@@ -38,6 +37,10 @@ def format(size):
         return '{0:.2f} TB'.format(B / TB)
 
 
+def get_current_time():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     # download file
     def do_GET(self):
@@ -51,7 +54,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Serve a POST request."""
         r, info = self.deal_post_data()
-        print(info + " from " + self.client_address[0] + ":" + str(self.client_address[1]))
+        print(f"[+] {get_current_time()} {info} from {self.client_address[0]}:{self.client_address[1]}")
         f = BytesIO()
         if r:
             f.write(b"Success!")
@@ -70,6 +73,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             f.close()
 
     def deal_post_data(self):
+        print(f"[+] {get_current_time()} deal uploading request from {self.client_address[0]}:{self.client_address[1]}")
         uploaded_files = []
         content_type = self.headers['content-type']
         if not content_type:
@@ -207,7 +211,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dir_image = 'data:image/gif;base64,R0lGODlhGAAYAMIAAP///7+/v7u7u1ZWVTc3NwAAAAAAAAAAACH+RFRoaXMgaWNvbiBpcyBpbiB0aGUgcHVibGljIGRvbWFpbi4gMTk5NSBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tACH5BAEAAAEALAAAAAAYABgAAANdGLrc/jAuQaulQwYBuv9cFnFfSYoPWXoq2qgrALsTYN+4QOg6veFAG2FIdMCCNgvBiAxWlq8mUseUBqGMoxWArW1xXYXWGv59b+WxNH1GV9vsNvd9jsMhxLw+70gAADs='
             fullname = os.path.join(path, name)
             displayname = linkname = name
-            fsize = format(os.path.getsize(fullname))
+            fsize = format_size(os.path.getsize(fullname))
             created_date = time.ctime(os.path.getctime(fullname))
             # Append / for directories or @ for symbolic links
             if os.path.isdir(fullname):
